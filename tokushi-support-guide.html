@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>特別支援教育 行動支援ガイド</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --primary: #1565C0; --primary-light: #E3F2FD; --accent: #FF6F00;
+      --bg: #F5F7FA; --card: #FFFFFF; --text: #1A1A2E;
+      --subtext: #546E7A; --border: #E0E7EF; --shadow: 0 2px 12px rgba(21,101,192,0.10);
+      --cat1: #2E7D32; --cat2: #6A1B9A; --cat3: #1565C0; --cat4: #E65100; --cat5: #C62828; --cat6: #00695C;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; padding-bottom: 90px; }
+
+    header { background: var(--primary); color: white; padding: 14px 16px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .header-row { display: flex; align-items: center; justify-content: space-between; max-width: 860px; margin: 0 auto; }
+    header h1 { font-size: 17px; font-weight: 700; line-height: 1.2; }
+    header .subtitle { font-size: 11px; opacity: 0.8; }
+    #csvBtn { background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.5); color: white; padding: 7px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; font-weight: 600; white-space: nowrap; }
+    #csvBtn:hover { background: rgba(255,255,255,0.28); }
+
+    .breadcrumb { background: white; border-bottom: 1px solid var(--border); padding: 8px 16px; }
+    .bc-inner { max-width: 860px; margin: 0 auto; display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--subtext); flex-wrap: wrap; }
+    .crumb { cursor: pointer; color: var(--primary); } .crumb:hover { text-decoration: underline; }
+    .sep { color: #bbb; } .bc-current { color: var(--text); font-weight: 600; }
+
+    main { max-width: 860px; margin: 0 auto; padding: 16px; }
+    .step-label { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .step-badge { background: var(--primary); color: white; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; }
+    .step-title { font-size: 16px; font-weight: 700; }
+    .step-desc { font-size: 12px; color: var(--subtext); margin-bottom: 14px; line-height: 1.5; }
+
+    /* ── SELECTABLE CARDS ── */
+    .sel-grid { display: grid; gap: 12px; }
+    .sel-grid.cat-cols { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+    .sel-grid.prob-cols { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+
+    .sel-card {
+      background: var(--card); border: 2px solid var(--border); border-radius: 14px;
+      padding: 14px 12px; cursor: pointer; text-align: left;
+      transition: all 0.15s; box-shadow: var(--shadow); position: relative;
+      user-select: none;
+    }
+    .sel-card:hover { transform: translateY(-1px); }
+    .sel-card.selected { border-color: var(--primary); background: var(--primary-light); }
+    .sel-card .chk {
+      position: absolute; top: 10px; right: 10px;
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 2px solid var(--border); background: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: transparent;
+      transition: all 0.15s; flex-shrink: 0;
+    }
+    .sel-card.selected .chk { background: var(--primary); border-color: var(--primary); color: white; }
+
+    .card-icon { font-size: 26px; margin-bottom: 6px; }
+    .card-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; margin-right: 26px; }
+    .card-desc { font-size: 11px; color: var(--subtext); line-height: 1.4; }
+    .card-count { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 8px; display: inline-block; margin-top: 6px; }
+    .card-tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 8px; background: #FFF3E0; color: #E65100; display: inline-block; margin-top: 6px; }
+
+    /* ── HYPOTHESIS SECTION ── */
+    .prob-section { background: var(--card); border-radius: 14px; box-shadow: var(--shadow); margin-bottom: 14px; overflow: hidden; }
+    .prob-section-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+    .prob-section-header .ph-icon { font-size: 20px; }
+    .prob-section-header .ph-name { font-weight: 700; font-size: 14px; }
+    .prob-section-body { padding: 12px 16px; }
+
+    .jiritsu-row { margin-bottom: 10px; }
+    .cat-label { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 8px; color: white; margin-bottom: 5px; }
+    .cat-1{background:var(--cat1)} .cat-2{background:var(--cat2)} .cat-3{background:var(--cat3)}
+    .cat-4{background:var(--cat4)} .cat-5{background:var(--cat5)} .cat-6{background:var(--cat6)}
+    .j-items { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 4px; }
+    .j-item { font-size: 11px; padding: 3px 8px; border-radius: 8px; font-weight: 500; }
+    .item-cat-1{background:#E8F5E9;color:var(--cat1)} .item-cat-2{background:#F3E5F5;color:var(--cat2)}
+    .item-cat-3{background:#E3F2FD;color:var(--cat3)} .item-cat-4{background:#FFF3E0;color:var(--cat4)}
+    .item-cat-5{background:#FFEBEE;color:var(--cat5)} .item-cat-6{background:#E0F2F1;color:var(--cat6)}
+
+    .hyp-list { display: flex; flex-direction: column; gap: 8px; }
+    .hyp-card {
+      border: 2px solid var(--border); border-radius: 10px; padding: 11px 14px;
+      cursor: pointer; display: flex; align-items: flex-start; gap: 10px;
+      transition: all 0.15s; background: white;
+    }
+    .hyp-card:hover { border-color: var(--accent); background: #FFF8E1; }
+    .hyp-card.selected { border-color: var(--accent); background: #FFF3E0; }
+    .hyp-card.selected .h-chk { background: var(--accent); border-color: var(--accent); color: white; }
+    .h-chk {
+      width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border);
+      background: white; display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; color: transparent; flex-shrink: 0; margin-top: 2px;
+    }
+    .hyp-text { font-size: 13px; font-weight: 600; line-height: 1.4; }
+
+    /* ── RESULT ── */
+    .result-block { background: var(--card); border-radius: 14px; box-shadow: var(--shadow); margin-bottom: 14px; overflow: hidden; }
+    .result-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
+    .result-body { padding: 12px 16px; }
+    .hyp-pill { background: linear-gradient(135deg,#FF6F00,#FF8F00); color: white; border-radius: 10px; padding: 10px 14px; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+    .hyp-pill .pill-label { font-size: 10px; opacity: 0.85; margin-bottom: 3px; }
+    .sup-item { background: #F8F9FF; border-left: 4px solid var(--primary); border-radius: 0 8px 8px 0; padding: 10px 12px; margin-bottom: 8px; }
+    .sup-num { font-size: 10px; color: var(--primary); font-weight: 700; margin-bottom: 3px; }
+    .sup-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+    .sup-detail { font-size: 11px; color: var(--subtext); line-height: 1.5; }
+    .merged-jiritsu { margin-top: 8px; }
+
+    /* ── STICKY BOTTOM BAR ── */
+    .next-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 2px solid var(--border);
+      padding: 12px 20px; display: flex; justify-content: center; gap: 12px;
+      z-index: 90; box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+    }
+    .next-btn {
+      background: var(--primary); color: white; border: none;
+      padding: 13px 30px; border-radius: 25px; font-size: 15px; font-weight: 700;
+      cursor: pointer; transition: background 0.2s; min-width: 220px;
+    }
+    .next-btn:disabled { background: #ccc; cursor: not-allowed; }
+    .next-btn:not(:disabled):hover { background: #0D47A1; }
+    .back-btn2 { background: white; border: 2px solid var(--border); color: var(--subtext); padding: 13px 20px; border-radius: 25px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .back-btn2:hover { border-color: var(--primary); color: var(--primary); }
+
+    .again-btn { background: var(--primary); color: white; border: none; padding: 13px 24px; border-radius: 25px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 8px; }
+    .again-btn:hover { background: #0D47A1; }
+    .log-badge { background: #E8F5E9; color: var(--cat1); border-radius: 12px; padding: 6px 14px; font-size: 12px; font-weight: 600; display: inline-block; margin-top: 16px; }
+
+    .section-divider { font-size: 12px; font-weight: 700; color: var(--subtext); padding: 8px 0 6px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    .fade-in { animation: fadeIn 0.22s ease; }
+    #toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(40px); background:#222; color:white; padding:9px 18px; border-radius:18px; font-size:13px; font-weight:600; transition:transform 0.3s; z-index:999; pointer-events:none; white-space:nowrap; }
+    #toast.show { transform:translateX(-50%) translateY(0); }
+    @media(max-width:480px){ .sel-grid.cat-cols{grid-template-columns:1fr} .sel-grid.prob-cols{grid-template-columns:1fr 1fr} }
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div><h1>特別支援教育 行動支援ガイド</h1><div class="subtitle">自立活動6区分27項目 連携サポートツール</div></div>
+    <button id="csvBtn" onclick="exportCSV()">📥 CSV出力</button>
+  </div>
+</header>
+<div class="breadcrumb" id="bc" style="display:none"><div class="bc-inner" id="bcInner"></div></div>
+<main id="main"></main>
+<div id="nextBar" class="next-bar" style="display:none"></div>
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// 自立活動の区分
+// ═══════════════════════════════════════════
+const JC = [
+  {id:1,name:"健康の保持",       cc:"cat-1",ic:"item-cat-1"},
+  {id:2,name:"心理的な安定",     cc:"cat-2",ic:"item-cat-2"},
+  {id:3,name:"人間関係の形成",   cc:"cat-3",ic:"item-cat-3"},
+  {id:4,name:"環境の把握",       cc:"cat-4",ic:"item-cat-4"},
+  {id:5,name:"身体の動き",       cc:"cat-5",ic:"item-cat-5"},
+  {id:6,name:"コミュニケーション",cc:"cat-6",ic:"item-cat-6"},
+];
+function jc(id){return JC.find(c=>c.id===id);}
+
+// ═══════════════════════════════════════════
+// 問題行動データ
+// ═══════════════════════════════════════════
+const P = {
+  p01:{icon:"🤕",name:"自傷行為",desc:"頭を叩く・手を噛む・壁に頭をぶつけるなど",tag:null,
+    jiritsu:[{catId:2,items:["情緒の安定","障害による学習上又は生活上の困難を改善・克服する意欲"]},{catId:3,items:["自己の理解と行動の調整"]},{catId:4,items:["感覚や認知の特性についての理解と対応"]}],
+    hypotheses:[
+      {id:"h1",text:"感覚刺激を求めている（感覚探求行動）",supports:[{title:"代替感覚刺激の提供",detail:"噛むチューブ・重いベスト・バイブレーターなど安全な感覚刺激グッズを常時用意する。"},{title:"感覚ダイエットの実施",detail:"作業療法士と連携し、1日の中で定期的に感覚刺激を取り入れるスケジュールを組む。"},{title:"前庭・固有感覚への対応",detail:"ブランコ・トランポリン・重い荷物運びなど全身運動の機会を意図的に設ける。"}]},
+      {id:"h2",text:"不快な感覚・痛みから逃れようとしている",supports:[{title:"不快刺激の同定と除去",detail:"行動が起きる場所・時間・活動を記録し、騒音・光・触感などを特定して除去する。"},{title:"感覚補助具の活用",detail:"イヤーマフ・サングラス・特定素材の衣服など本人にあった補助具を導入する。"},{title:"医療機関との連携",detail:"痛みや不快感の身体的原因（耳の炎症・歯痛など）を除外するため医師に相談する。"}]},
+      {id:"h3",text:"要求・気持ちを伝えるコミュニケーション手段になっている",supports:[{title:"代替コミュニケーション手段の指導",detail:"PECS・AAC機器・絵カードを使い「もっと」「いや」「助けて」など基本的な意思伝達を教える。"},{title:"機能的コミュニケーションの強化",detail:"自傷の前に代替行動（手を挙げる、カードを渡す）が出たらすぐに応じる。"},{title:"感情表出の練習",detail:"感情カードや感情温度計を用いて気持ちの状態を視覚的に示す練習を日常的に行う。"}]},
+      {id:"h4",text:"注目・反応を得たい（注目獲得）",supports:[{title:"適切な行動への先行注目",detail:"落ち着いている場面で積極的に声かけ・関わりを増やし、注目ニーズを計画的に満たす。"},{title:"計画的な無視と代替行動の強化",detail:"自傷への反応を最小化し、静かに過ごせたときに笑顔で称賛する。"},{title:"1対1の関わりタイムの設定",detail:"一日の中で1対1の関わりタイムを設定し注目ニーズを計画的に満たす。"}]},
+    ]},
+  p02:{icon:"👊",name:"他害行為",desc:"友達や先生を叩く・噛む・引っ掻くなど",tag:null,
+    jiritsu:[{catId:2,items:["情緒の安定","状況の理解と変化への対応"]},{catId:3,items:["他者の意図や感情の理解","自己の理解と行動の調整"]},{catId:6,items:["コミュニケーションの基礎的能力","状況に応じたコミュニケーション"]}],
+    hypotheses:[
+      {id:"h1",text:"要求が通らないフラストレーションの爆発",supports:[{title:"要求を事前に叶える工夫",detail:"何が欲しいか・したいかを先読みし、フラストレーションが高まる前に選択肢を提示する。"},{title:"怒りのコントロールスキルの指導",detail:"深呼吸・静かな場所へ移動など、自分を落ち着かせる方法をゲーム形式で練習する。"},{title:"代替表現の確立",detail:"「ください」「かして」「いや」を絵カードや音声で伝えられるよう集中的に練習する。"}]},
+      {id:"h2",text:"混乱・パニック状態から身を守ろうとしている",supports:[{title:"クールダウンスペースの設置",detail:"刺激を減らした落ち着けるコーナー（衝立・クッション・好きなアイテム）を教室内に設ける。"},{title:"危機の予兆サインの把握",detail:"他害前のサイン（耳を塞ぐ・うなる・体が固くなる）をリスト化し早期に介入する。"},{title:"環境の構造化と刺激量の調整",detail:"刺激が多い場面でのサポート体制を組み、必要に応じて退席できる仕組みを作る。"}]},
+      {id:"h3",text:"「やめて」「いや」を伝える唯一の手段になっている",supports:[{title:"拒否カードの導入",detail:"「いや」「やめて」を表す絵カードを常に手の届く場所に置き、使えたらすぐに応じる。"},{title:"拒否が認められる経験の積み重ね",detail:"小さな場面で「いや」が通る経験を増やし、コミュニケーションへの信頼を築く。"},{title:"ソーシャルストーリーの活用",detail:"「こまったときはカードを使う」という場面を絵本形式でまとめ繰り返し読み聞かせる。"}]},
+      {id:"h4",text:"感覚的な問題（触覚防衛など）による反射的反応",supports:[{title:"触られることへの段階的脱感作",detail:"本人が安心できる距離感・触れ方を確認し、合意の上でゆっくり身体接触への慣れを促す。"},{title:"触覚防衛への環境配慮",detail:"人が密集する場面で本人の立ち位置を端にするなど、不意の接触を減らす。"},{title:"固有感覚への働きかけ",detail:"重いものを運ぶ・壁押しなど固有感覚入力で神経系を落ち着かせ触覚防衛を緩和する。"}]},
+    ]},
+  p03:{icon:"😤",name:"癇癪・パニック",desc:"急に大泣き・叫ぶ・床に倒れて動かなくなるなど",tag:null,
+    jiritsu:[{catId:2,items:["情緒の安定","状況の理解と変化への対応"]},{catId:4,items:["感覚や認知の特性についての理解と対応","認知や行動の手がかりとなる概念の形成"]},{catId:3,items:["自己の理解と行動の調整"]}],
+    hypotheses:[
+      {id:"h1",text:"見通しが持てない不安・急な変更への対応困難",supports:[{title:"視覚的スケジュールの活用",detail:"1日の流れをカード・写真・絵で示したスケジュール表を準備し、変更時は変更カードで事前に伝える。"},{title:"予告と移行の準備",detail:"「あと5分でおわり」と時計やタイマーを使って視覚的に予告する習慣をつける。"},{title:"変化への段階的慣れ",detail:"小さな変更（席の変更など）から始め、変化後にも安全だという経験を積み重ねる。"}]},
+      {id:"h2",text:"感覚過負荷（感覚情報が処理しきれない）",supports:[{title:"刺激量の調整",detail:"騒がしい環境・蛍光灯の点滅・人の密集など過負荷になる感覚刺激を特定し減らす。"},{title:"逃げ場・クールダウンスペースの設置",detail:"感覚負荷が高まったとき自分から移動できる「静かな場所」を確保し使い方を練習する。"},{title:"感覚調整グッズの導入",detail:"イヤーマフ・フィジェットツール・重いブランケットなど感覚を自己調整できるアイテムを揃える。"}]},
+      {id:"h3",text:"要求・拒否が伝わらない積み重なりによる爆発",supports:[{title:"要求・拒否の代替手段確立",detail:"「ちょうだい」「やめて」「もっと」「もういい」を1枚ずつカードにし使う練習を毎日繰り返す。"},{title:"応答性の向上",detail:"コミュニケーションの芽（視線・手差し・発声）に素早く応じ伝わる実感を積み重ねる。"},{title:"フラストレーション早期発見",detail:"不満の初期サイン（そわそわ・顔が赤い・声が変わる）を記録し早い段階で介入する。"}]},
+      {id:"h4",text:"疲労・体調不良・睡眠不足による耐性低下",supports:[{title:"健康チェックルーティンの導入",detail:"登校時に体調確認（顔色・目の様子・保護者からの情報）を行い配慮のある日課を設定する。"},{title:"保護者との情報共有",detail:"就寝時刻・食事・体調の連絡帳記入を依頼し学校での対応に活かす。"},{title:"活動量の調整",detail:"体調や疲労度に応じてその日の活動量・難易度を柔軟に調整する仕組みを作る。"}]},
+    ]},
+  p04:{icon:"🏃",name:"離席・逃走行動",desc:"教室を出て行く・校内を走り回る・外に出ようとするなど",tag:null,
+    jiritsu:[{catId:2,items:["情緒の安定","状況の理解と変化への対応"]},{catId:4,items:["感覚や認知の特性についての理解と対応"]},{catId:5,items:["身体の移動能力"]}],
+    hypotheses:[
+      {id:"h1",text:"活動が難しすぎる・嫌いで逃げている（課題回避）",supports:[{title:"課題の難易度調整",detail:"本人の現在の力より少し易しい課題から始め、成功体験を積み上げながら段階的に難しくする。"},{title:"活動時間の短縮と休憩の組み込み",detail:"5分活動・2分休憩など短いサイクルで取り組める構造に変える。"},{title:"選択肢の提供",detail:"「どっちのプリントをやる？」のようにどちらを選んでも参加できる選択肢を用意する。"}]},
+      {id:"h2",text:"感覚過負荷から逃げるための逃走",supports:[{title:"逃げ場を教室内に設ける",detail:"「落ち着きコーナー」に行ってよいサインや手順カードを作り、外に出る前に使えるよう練習する。"},{title:"感覚環境の整備",detail:"教室の騒音・光・においなどを見直し本人が過負荷になる刺激を減らす。"},{title:"離席前のサインを教える",detail:"「でてもいいですか」カードを使って許可を求める練習をし、安全な逃走先を確保する。"}]},
+      {id:"h3",text:"好きな場所・ものへの接近（強化物への接近）",supports:[{title:"活動後の楽しみを設定",detail:"「終わったら〇〇（好きな活動）」と見える形で約束し課題参加の動機づけにする。"},{title:"好きな活動を課題に組み込む",detail:"本人が好む素材やテーマを課題の中に意図的に取り入れる。"},{title:"動線の管理",detail:"好きな場所への視線が向かないよう座席配置や扉の管理を工夫する。"}]},
+      {id:"h4",text:"注目・反応を得るための行動",supports:[{title:"着席中の計画的な注目",detail:"席に座っているときに積極的に声をかけ落ち着いた行動への注目を意図的に増やす。"},{title:"離席への反応の最小化",detail:"離席したとき過度に騒がず冷静に短い言葉で誘導し戻ったときに称賛する。"},{title:"1対1の関わりタイムの確保",detail:"注目ニーズを満たすための時間を構造的に設定し離席しなくても関わりが得られることを教える。"}]},
+    ]},
+  p05:{icon:"🔁",name:"こだわり・常同行動",desc:"同じ動作の繰り返し・特定のルーティンへの強い固執など",tag:null,
+    jiritsu:[{catId:2,items:["情緒の安定","状況の理解と変化への対応"]},{catId:4,items:["感覚や認知の特性についての理解と対応","認知や行動の手がかりとなる概念の形成"]}],
+    hypotheses:[
+      {id:"h1",text:"不安・混乱を調整するためのセルフレギュレーション",supports:[{title:"不安の原因となる状況の把握",detail:"こだわり行動がどんな状況で増えるかを記録し、引き金となる不安の原因を特定・対処する。"},{title:"代替の自己調整手段の提供",detail:"フィジェットツール・ストレスボール・深呼吸カードなどより適切な自己調整手段を教える。"},{title:"見通しを持てる構造の強化",detail:"スケジュール表・時間の見える化・ルーティンの明示化で常同行動への依存度を下げる。"}]},
+      {id:"h2",text:"感覚刺激の自己調整（感覚探求・感覚回避）",supports:[{title:"代替感覚刺激の提供",detail:"揺れ・回転・光など本人が好む感覚をより安全・社会的に適切な形で提供する。"},{title:"感覚ダイエットの設計",detail:"作業療法士と連携し、感覚刺激のニーズを一日の活動に計画的に組み込む。"},{title:"常同行動の許容時間の設定",detail:"「〇分間だけOK」という時間制限を設け徐々に代替活動への移行を促す。"}]},
+      {id:"h3",text:"ルーティン・同一性保持への強いこだわり（ASD特性）",supports:[{title:"変化の段階的導入",detail:"ほんの小さな変更（順番を1つ変えるなど）から始め変化があっても安全だという経験を積む。"},{title:"変更の視覚的事前予告",detail:"変更カード・交通信号カードなどで変化が来ることを視覚的に知らせ心の準備を促す。"},{title:"こだわりを学習に活用",detail:"本人の強い関心（乗り物・キャラクターなど）を授業のテーマや教材に取り込む。"}]},
+    ]},
+  p06:{icon:"🫂",name:"強い執着・後追い",desc:"特定の大人から離れられない・後追い・べたつきなど",tag:"愛着障害",
+    jiritsu:[{catId:2,items:["情緒の安定"]},{catId:3,items:["他者とのかかわりの基礎","自己の理解と行動の調整"]},{catId:6,items:["コミュニケーションの基礎的能力"]}],
+    hypotheses:[
+      {id:"h1",text:"安心できる安全基地がまだ確立していない",supports:[{title:"特定の支援者との信頼関係の構築",detail:"毎日決まった支援者が挨拶・声かけ・好きな活動を一緒に行い予測可能で温かい関係を丁寧に築く。"},{title:"物理的な安心基地の設定",detail:"「帰ってこられる場所」（本人の席・コーナー・お気に入りのグッズ）を明確にし安心の拠点を作る。"},{title:"繋がりアイテムの活用",detail:"支援者の写真カードや「〇〇先生はここにいるよ」カードを持たせ離れていても繋がっている感覚を補う。"}]},
+      {id:"h2",text:"分離不安・見捨てられ恐怖",supports:[{title:"分離の予告と戻りの約束の明示",detail:"「〇分後に戻る」と時計やカードで約束を視覚化し、必ず約束を守る。"},{title:"段階的分離の練習",detail:"まず視界内・次に廊下・次に別室と短時間から少しずつ離れる距離・時間を伸ばす練習をする。"},{title:"分離への肯定的な意味付け",detail:"「先生は〇〇くんが上手にできると信じているから見ててね」と分離を成長の証として伝える。"}]},
+      {id:"h3",text:"承認・愛情を確認したい強い欲求",supports:[{title:"無条件の肯定的関わりの増加",detail:"「いてくれるだけで嬉しい」という関わりを意識的に増やし存在を肯定する。"},{title:"関わりタイムの構造化",detail:"「10分は先生と2人の時間」と予測可能な関わりタイムを設定し欲求が満たされる機会を保障する。"},{title:"執着への穏やかな応答と限界設定",detail:"「今は〇〇だから後でね」と予測可能な限界を設定し少しずつ待てる力を育てる。"}]},
+    ]},
+  p07:{icon:"🙅",name:"拒否・拒絶行動",desc:"「やらない」「いや」と頑として動かない・参加しないなど",tag:null,
+    jiritsu:[{catId:2,items:["情緒の安定","障害による学習上又は生活上の困難を改善・克服する意欲"]},{catId:3,items:["自己の理解と行動の調整"]},{catId:4,items:["感覚や認知の特性についての理解と対応"]}],
+    hypotheses:[
+      {id:"h1",text:"活動が難しすぎて失敗が怖い（失敗恐怖）",supports:[{title:"課題の難易度調整",detail:"「できる」一歩手前の課題から始め必ず成功できる体験を意図的に作り自己効力感を育てる。"},{title:"エラーレス学習の導入",detail:"ヒントや手助けを多めに与えてエラーを防ぎ正解体験を積み重ねてから支援を減らす。"},{title:"挑戦を称賛する文化",detail:"結果ではなくプロセス（「やってみようとした」）を称賛し挑戦へのハードルを下げる。"}]},
+      {id:"h2",text:"見通しが持てない・何をするのか分からない不安",supports:[{title:"活動の手順を視覚化",detail:"「①道具を出す②やる③片付ける」と活動のステップを写真・絵・文字カードで示す。"},{title:"終わりの見える化",detail:"「ここまでやったら終わり」とゴールを明確にしタイマーや分量で終わりが分かるようにする。"},{title:"初めての活動へのプレビュー",detail:"新しい活動の前に見本を見せる・写真で紹介するなど事前情報を提供して安心感を高める。"}]},
+      {id:"h3",text:"感覚的な不快・嫌悪感による回避",supports:[{title:"感覚的不快の特定",detail:"何の感覚（素材・音・においなど）が嫌なのかを丁寧に探り代替素材・代替方法を用意する。"},{title:"段階的脱感作",detail:"嫌な刺激に少しずつ慣れていく段階的な練習を本人のペースで行う。"},{title:"選択肢の提供",detail:"「素材Aで作る」か「素材Bで作る」かなど感覚的に許容できる選択肢を常に準備する。"}]},
+    ]},
+  p08:{icon:"😶",name:"嘘をつく・物を取る",desc:"頻繁に嘘をつく・他者のものを断りなく持っていくなど",tag:"愛着障害",
+    jiritsu:[{catId:2,items:["情緒の安定"]},{catId:3,items:["他者の意図や感情の理解","自己の理解と行動の調整"]},{catId:6,items:["コミュニケーションの基礎的能力","言語の形成と活用"]}],
+    hypotheses:[
+      {id:"h1",text:"欠乏感・「自分は持っていない」という強い不全感",supports:[{title:"欠乏ニーズを言語化する支援",detail:"「欲しかった」「羨ましかった」という気持ちを安全に言える関係性と言葉を育てる。"},{title:"物・活動を保障する仕組み",detail:"「これは〇〇さんの」と個人の持ち物・場所を保障し「持てる」安心感を作る。"},{title:"欲しいものを要求できる練習",detail:"「貸して」「ほしい」と伝えると応じてもらえる経験を積み重ね正当な要求手段を強化する。"}]},
+      {id:"h2",text:"衝動制御の困難（衝動性の高さ）",supports:[{title:"「待てる」スキルの段階的指導",detail:"短時間（5秒）の待ちから始め徐々に待ち時間を延ばすトレーニングをゲーム感覚で行う。"},{title:"衝動が起きる前の環境設定",detail:"欲しいものが目に入りにくいよう収納・配置を工夫し衝動が起きにくい環境を整える。"},{title:"「まず考える」ルーティンの練習",detail:"「取る前に止まる→考える→聞く」という手順を繰り返し練習し行動の前に思考を挟む習慣を育てる。"}]},
+      {id:"h3",text:"叱られることへの強い恐怖から嘘でごまかす",supports:[{title:"正直に言えた体験を称賛",detail:"本当のことを話したとき叱らずに「話してくれてありがとう」と受け止め正直さを強化する。"},{title:"失敗・間違いに対する穏やかな対応",detail:"「どうすればよかった？」と一緒に考えるアプローチに切り替える。"},{title:"安全な関係性の構築",detail:"日常的に受け入れる・認める関わりを重ね「ここは安全」という実感を土台として作る。"}]},
+    ]},
+  p09:{icon:"😈",name:"試し行動・反抗",desc:"わざと困らせる・限界まで押してくる・なんでも反対するなど",tag:"愛着障害",
+    jiritsu:[{catId:2,items:["情緒の安定","状況の理解と変化への対応"]},{catId:3,items:["他者とのかかわりの基礎","自己の理解と行動の調整"]}],
+    hypotheses:[
+      {id:"h1",text:"大人が信頼できるかどうか試している（愛着の試し行動）",supports:[{title:"一貫性・予測可能性の維持",detail:"約束を必ず守る・感情的にならない・毎日同じように接するなど一貫した対応を継続する。"},{title:"試し行動を「確認したい気持ち」として理解する",detail:"困らせる行動を「この人は安全か確かめている」と理解し穏やかに限界を示す。"},{title:"愛情の無条件性を示す",detail:"「どんなことがあっても先生は〇〇さんの味方だよ」と繰り返し伝え行動で証明し続ける。"}]},
+      {id:"h2",text:"コントロール感を求めている",supports:[{title:"選択・決定の機会を増やす",detail:"「どっちにする？」「どっちから始める？」など小さな選択権を日常的に提供する。"},{title:"ルールの理由を丁寧に説明",detail:"「なぜそうするのか」を分かる言葉で説明しルールを理不尽な強制として感じさせない。"},{title:"自律性を尊重した構造化",detail:"やることの枠組みは維持しながらその中での方法・順番を本人が選べるようにする。"}]},
+      {id:"h3",text:"注目・関与を求めている",supports:[{title:"問題行動前の予防的な関わり",detail:"試し行動が出る前に積極的に声をかけ落ち着いている状態での関わりを意図的に増やす。"},{title:"特別な1対1の時間の設定",detail:"「今日の10分は〇〇さんと先生だけの時間」と構造的な関わりの時間を設ける。"},{title:"反抗への穏やかな対応と粘り強さ",detail:"感情的に反応せず毅然としつつ温かく根気よく関わり続ける姿勢を保つ。"}]},
+    ]},
+  p10:{icon:"👂",name:"感覚過敏による混乱",desc:"音・光・触感などに強く反応して混乱・逃げ出すなど",tag:null,
+    jiritsu:[{catId:4,items:["保有する感覚の活用","感覚や認知の特性についての理解と対応","感覚の補助及び代行手段の活用"]},{catId:2,items:["情緒の安定"]},{catId:1,items:["障害の特性の理解と生活環境の調整"]}],
+    hypotheses:[
+      {id:"h1",text:"聴覚過敏（音に強く反応）",supports:[{title:"イヤーマフ・耳栓の導入",detail:"体育館・音楽・集会など騒がしい場面でイヤーマフを使えるよう準備し使い方を練習する。"},{title:"音環境の調整",detail:"椅子脚にテニスボール、カーペット設置など音を減らす環境整備を行う。"},{title:"音の予告",detail:"突然の大きな音（ベル・放送）の前に予告カードや合図を出し心の準備ができるようにする。"}]},
+      {id:"h2",text:"触覚過敏（触られること・特定の素材が苦手）",supports:[{title:"素材の選択肢提供",detail:"学習活動で使う素材について複数の選択肢を用意し本人が許容できるものを選べるようにする。"},{title:"接触の予告と同意",detail:"触る前に「今から触るよ」と声をかけ同意を得る手順を徹底する。"},{title:"固有感覚入力による調整",detail:"重みのあるベスト・マッサージ・壁押しなど固有感覚への入力で触覚防衛を緩和する。"}]},
+      {id:"h3",text:"視覚過敏（光・視覚的混乱への強い反応）",supports:[{title:"照明の調整",detail:"蛍光灯の輝度を下げる・座席を窓から離すなど視覚負荷を減らす環境整備を行う。"},{title:"視覚情報の整理",detail:"掲示物・黒板・机周りの視覚情報を最小限に絞り視覚的混乱を減らす。"},{title:"サングラス・色付きメガネの検討",detail:"専門家（眼科・OT）と連携し色つきメガネや遮光レンズの使用を検討する。"}]},
+      {id:"h4",text:"前庭感覚・固有感覚の処理の困難",supports:[{title:"感覚統合的なアプローチ",detail:"作業療法士と連携し揺れ・重さ・圧力などへの感覚統合療法を計画的に実施する。"},{title:"動きを取り入れた学習",detail:"立ち作業・バランスディスク・動きを伴う課題を組み込み固有感覚・前庭感覚への入力を補う。"},{title:"安定した姿勢のサポート",detail:"足置き台・背もたれクッションなど姿勢を安定させる用具を導入し感覚入力の基盤を整える。"}]},
+    ]},
+  p11:{icon:"😰",name:"強い不安・緊張",desc:"常に緊張している・不安が強くて動けない・体の症状が出るなど",tag:null,
+    jiritsu:[{catId:2,items:["情緒の安定","状況の理解と変化への対応","障害による学習上又は生活上の困難を改善・克服する意欲"]},{catId:1,items:["健康状態の維持・改善"]},{catId:3,items:["自己の理解と行動の調整"]}],
+    hypotheses:[
+      {id:"h1",text:"見通しが持てないことへの不安",supports:[{title:"視覚的スケジュールの徹底",detail:"一日の流れを始業時に確認し変更時は必ず事前に伝える習慣をつける。"},{title:"「次に何が起きるか」の予告",detail:"活動終了5分前・1分前の予告を習慣化し切り替えの心の準備を支援する。"},{title:"初めての場所・活動への事前体験",detail:"写真・動画・事前訪問などで予習し未知への不安を減らす。"}]},
+      {id:"h2",text:"過去のトラウマ・失敗体験による回避",supports:[{title:"安全な関係性の再構築",detail:"急がず穏やかに関わり「ここは安全」という実感を土台から丁寧に積み上げる。"},{title:"成功体験の積み重ね",detail:"本人が必ず成功できる易しい課題から始め「できた」体験を増やして自信を育てる。"},{title:"スクールカウンセラー・専門家との連携",detail:"必要に応じてSC・心理士・精神科医と連携しトラウマへの専門的対応を検討する。"}]},
+      {id:"h3",text:"社会的場面・人との関わりへの不安",supports:[{title:"少人数・安心できる場面から拡大",detail:"大集団を避け1対1→小グループ→クラスと段階的に社会的場面を広げる。"},{title:"予測可能な社会的ルーティンの整備",detail:"あいさつの仕方・助けの求め方など場面での行動パターンを練習して予測可能にする。"},{title:"身体的リラクゼーションの練習",detail:"深呼吸・筋弛緩法・マインドフルネスなど不安時に使えるリラクゼーション手段を教える。"}]},
+    ]},
+  p12:{icon:"🌀",name:"注意・集中の困難",desc:"すぐに気が散る・長時間の課題に取り組めない・落ち着きがないなど",tag:null,
+    jiritsu:[{catId:4,items:["感覚や認知の特性についての理解と対応","認知や行動の手がかりとなる概念の形成"]},{catId:2,items:["情緒の安定"]},{catId:1,items:["生活のリズムや生活習慣の形成"]}],
+    hypotheses:[
+      {id:"h1",text:"ADHD・発達特性による注意調整の困難",supports:[{title:"環境の整理・視覚的刺激の削減",detail:"机の上・周囲の掲示物を最小限にし注意が分散しにくい環境を作る。"},{title:"課題の細分化と短時間サイクル",detail:"大きな課題を小さなステップに分け「5分やる→2分休む」など短サイクルで取り組む。"},{title:"タイマー・視覚的時間管理の活用",detail:"タイムタイマーや砂時計で残り時間を視覚化し「いつまで」が分かる状況を作る。"}]},
+      {id:"h2",text:"感覚刺激への過反応（外部刺激に引きずられやすい）",supports:[{title:"聴覚刺激の遮断",detail:"イヤーマフや耳栓を活用し外部の音を減らして集中しやすい環境を整える。"},{title:"座席の工夫",detail:"廊下や窓から離れた席に配置し視覚・聴覚的な外部刺激への曝露を減らす。"},{title:"動きを取り入れた課題設計",detail:"立ち作業・動作を伴う学習を組み込み動きたい衝動を活動に変換する。"}]},
+      {id:"h3",text:"不安・緊張による注意の分散",supports:[{title:"心理的安全性の確保",detail:"間違えても責められない・失敗しても大丈夫という安心感を繰り返し伝える。"},{title:"活動開始のルーティン化",detail:"「まず深呼吸→道具を出す→始める」と活動開始の手順を固定し気持ちを切り替えやすくする。"},{title:"達成可能な目標の設定",detail:"「今日はこの1問だけ」など小さな目標を設け達成感を繰り返し体験させる。"}]},
+    ]},
+  p13:{icon:"🔄",name:"場面転換の困難",desc:"活動の切り替えができない・次に移れない・いつまでも続けたがるなど",tag:null,
+    jiritsu:[{catId:2,items:["状況の理解と変化への対応"]},{catId:4,items:["感覚や認知の特性についての理解と対応","認知や行動の手がかりとなる概念の形成"]}],
+    hypotheses:[
+      {id:"h1",text:"先の見通しが持てない不安（次が何かわからない）",supports:[{title:"視覚的スケジュールと終わりのカード",detail:"スケジュールを視覚化し終わった活動はカードをめくる・はずすなどで「終わり」を明確にする。"},{title:"次の活動のプレビュー",detail:"「次は体育だよ。ボール遊びをするよ」と次の活動のイメージをあらかじめ提供する。"},{title:"移行の儀式化",detail:"「片付け→洗い場に行く→次の準備」など切り替えのルーティンを固定化して予測可能にする。"}]},
+      {id:"h2",text:"好きな活動を終わりにしたくない（好み活動への強い執着）",supports:[{title:"「続きは後で」の保証",detail:"「今は終わりだけど放課後にまたできるよ」と後での機会を保証し終わりの絶望感を和らげる。"},{title:"終わりを見える化",detail:"タイマー・砂時計・カウントダウンで残り時間を視覚化し終わりが予測できるようにする。"},{title:"次の活動に好きな要素を組み込む",detail:"次の活動に本人が好む要素（好きなキャラクター・音楽・道具）を入れ移行の魅力を高める。"}]},
+      {id:"h3",text:"認知の特性・柔軟性の低さ（ASD的特性）",supports:[{title:"「変化は大丈夫」の経験の積み重ね",detail:"小さな変化から始め変化後にも好きなことが続くという経験を積み重ねる。"},{title:"変更カード・信号カードの活用",detail:"「変わるよ」カードや黄色（準備）→赤（終わり）の信号を使い変化を予測可能な形で知らせる。"},{title:"終わりのルーティン自体を楽しくする",detail:"片付けをゲーム化する・好きな音楽を終わりのBGMにするなど切り替え自体を楽しめる要素を加える。"}]},
+    ]},
+  p14:{icon:"🍽️",name:"食事の問題行動",desc:"極端な偏食・食べることを拒否・口に詰め込むなど",tag:null,
+    jiritsu:[{catId:1,items:["健康状態の維持・改善","身体各部の状態の理解と養護"]},{catId:4,items:["感覚や認知の特性についての理解と対応"]},{catId:5,items:["日常生活に必要な基本動作"]}],
+    hypotheses:[
+      {id:"h1",text:"感覚過敏（味・食感・においへの強い反応）による偏食",supports:[{title:"受け入れられる食品リストの把握",detail:"本人が食べられる食品を丁寧に把握し保護者と共有してそこから栄養を確保する計画を立てる。"},{title:"段階的な食品導入",detail:"新しい食品を少量から・本人が選んで・遊びの延長で試す段階的アプローチで食域を広げる。"},{title:"食環境の調整",detail:"食事中の騒音・においを減らし落ち着ける場所・配置で食べられるよう環境を整える。"}]},
+      {id:"h2",text:"口腔機能・嚥下の困難",supports:[{title:"言語聴覚士・栄養士との連携",detail:"口腔機能のアセスメントを専門家に依頼し食形態・調理方法の調整について助言を得る。"},{title:"食具の工夫",detail:"持ちやすいスプーン・フォーク・補助具を用意し食事動作の困難を軽減する。"},{title:"姿勢の調整",detail:"嚥下しやすい姿勢（足底が床に着く・体幹が安定する）を確保するため椅子・クッションを調整する。"}]},
+      {id:"h3",text:"食のこだわり・同一性保持（ASD的特性）",supports:[{title:"こだわりを尊重しながら緩やかに広げる",detail:"決まった食器・色・並べ方などのこだわりを受け入れながら少しずつバリエーションを広げる。"},{title:"ソーシャルストーリーの活用",detail:"「いろいろなものを食べると体が強くなる」ストーリーを絵本形式で繰り返し読む。"},{title:"食事のルーティンを明確化",detail:"どこで・何の順番で・どれだけ食べるかを視覚的に示し食事のプロセスを予測可能にする。"}]},
+    ]},
+  p15:{icon:"👥",name:"友人関係のトラブル",desc:"友達を傷つける・一方的な関わり・仲間外れにされるなど",tag:null,
+    jiritsu:[{catId:3,items:["他者とのかかわりの基礎","他者の意図や感情の理解","集団への参加の基礎"]},{catId:6,items:["状況に応じたコミュニケーション","コミュニケーションの基礎的能力"]}],
+    hypotheses:[
+      {id:"h1",text:"社会的スキルの未習得（ルールや順番が分からない）",supports:[{title:"具体的なスキルの直接指導",detail:"「貸して」「いっしょに遊ぼう」「順番だよ」など場面ごとのセリフを直接教えロールプレイで練習する。"},{title:"ソーシャルストーリーの活用",detail:"場面ごとの適切な行動を絵本・漫画形式で示し繰り返し読んで理解を深める。"},{title:"スキルを使える場面の設定",detail:"構造化された小グループ活動（ゲーム・工作）で学んだスキルを安全に練習できる場を設ける。"}]},
+      {id:"h2",text:"相手の気持ち・意図の理解困難（心の理論の未発達）",supports:[{title:"感情の視覚化",detail:"表情カード・感情絵本を使い様々な感情の表情・場面を繰り返し学ぶ機会を作る。"},{title:"「相手はどう感じる？」の練習",detail:"日常の出来事や絵本の場面で「〇〇したら相手はどう思う？」を一緒に考える練習を積み重ねる。"},{title:"映像・アニメを活用した学習",detail:"感情が分かりやすく描かれたアニメや動画を使い感情理解の練習を楽しく行う。"}]},
+      {id:"h3",text:"衝動制御の困難（思ってもやってはいけないことをしてしまう）",supports:[{title:"「止まる→考える→行動する」の習慣化",detail:"行動前に一度止まるための合図（手のひらサイン・深呼吸）を決め日常的に練習する。"},{title:"行動前の言語化の促進",detail:"「何がしたい？どうしたらいい？」と行動前に言葉で考える習慣を支援者のサポートで育てる。"},{title:"成功体験の積み重ね",detail:"自分の衝動を制御できた場面を称賛し「我慢できた自分」への肯定的なセルフイメージを育てる。"}]},
+    ]},
+  p16:{icon:"🍬",name:"異食",desc:"土・紙・消しゴム・砂など食べ物でないものを口に入れる・食べる",tag:null,
+    jiritsu:[{catId:1,items:["健康状態の維持・改善","身体各部の状態の理解と養護"]},{catId:4,items:["感覚や認知の特性についての理解と対応"]},{catId:2,items:["情緒の安定"]}],
+    hypotheses:[
+      {id:"h1",text:"口腔感覚刺激を強く求めている（感覚探求）",supports:[{title:"代替口腔刺激の提供",detail:"噛み応えのあるシリコン噛むチューブ・グミ・固めのガム状おやつなど安全な口腔刺激グッズを常時持たせる。"},{title:"口腔運動への関わり",detail:"ストローでの飲み物・吹く遊び（シャボン玉・笛）など口腔運動機能を高める活動を日課に取り入れる。"},{title:"感覚ダイエットの設計",detail:"作業療法士・言語聴覚士と連携し口腔感覚を含む感覚ダイエットプログラムを組む。"}]},
+      {id:"h2",text:"空腹・栄養の偏りによる行動",supports:[{title:"食事内容・量の見直し",detail:"一日の食事量・栄養バランスを保護者と確認し学校での補食（間食）の導入を検討する。"},{title:"医療機関との連携（栄養評価）",detail:"小児科・栄養士と連携し血液検査・栄養評価を実施して鉄欠乏や亜鉛欠乏などを除外する。"},{title:"腹が減りやすい時間帯への対策",detail:"異食が多い時間帯を把握しその時間帯に少量の補食を提供する。"}]},
+      {id:"h3",text:"不安・ストレスの自己調整手段として口に入れている",supports:[{title:"不安の原因の特定と環境調整",detail:"異食が増える場面（活動の切り替え・集団場面など）を記録し不安の引き金を特定して環境を整える。"},{title:"代替自己調整手段の提供と練習",detail:"深呼吸・フィジェットツール・ストレスボールなど口に入れない形の自己調整手段を教えて強化する。"},{title:"安心できる環境と関係性の整備",detail:"支援者との安定した関係・予測可能なルーティンを整えストレス源そのものを減らす。"}]},
+      {id:"h4",text:"食べ物と食べ物でないものの区別が難しい（認知の困難）",supports:[{title:"「食べるもの・食べないもの」の分類学習",detail:"実物・写真・カードを使い食べるものと食べないものの仕分け練習を繰り返し行う。"},{title:"危険物への視覚的マーキング",detail:"口に入れやすい文具や素材に「×」シールや赤いテープを貼り「これは食べない」の視覚的手がかりにする。"},{title:"環境から口に入れられるものを排除",detail:"机の上・手の届く場所から小さな消しゴム・粘土・砂などを取り除き異食が起きにくい環境を作る。"}]},
+    ]},
+  p17:{icon:"🚽",name:"排便の困難",desc:"トイレで排便できない・便秘・漏らす・我慢しすぎるなど",tag:null,
+    jiritsu:[{catId:1,items:["健康状態の維持・改善","生活のリズムや生活習慣の形成"]},{catId:5,items:["日常生活に必要な基本動作"]},{catId:4,items:["感覚や認知の特性についての理解と対応"]}],
+    hypotheses:[
+      {id:"h1",text:"トイレ環境への感覚的嫌悪（音・におい・冷たさ・狭さなど）",supports:[{title:"トイレ環境のカスタマイズ",detail:"便座カバー・脱臭剤・照明調整・静かなBGMなど本人の感覚的な不快を減らす改善を行う。"},{title:"感覚補助具の活用",detail:"流水音が苦手な場合はイヤーマフを使用する・においが苦手な場合はマスク着用を許可するなど個別対応する。"},{title:"段階的なトイレ慣れの練習",detail:"まずトイレ前で立つ→入る→便器を見る→座るなどごく小さなステップで慣れていく練習を行う。"}]},
+      {id:"h2",text:"排便への恐怖・不安（痛かった経験・便器への恐怖）",supports:[{title:"恐怖の原因の特定と医療連携",detail:"痛みが原因の場合は便秘治療（緩下剤等）を医師に相談し排便そのものを「痛くない体験」に変える。"},{title:"トイレを安心できる場にする工夫",detail:"本人の好きなポスターを貼る・好きな音楽をかけるなどトイレをポジティブな場所にする工夫をする。"},{title:"スモールステップでの成功体験の積み重ね",detail:"「便器に座れた」だけでも大いに称賛し恐怖より達成感が上回る体験を積み重ねる。"}]},
+      {id:"h3",text:"排便の感覚の気づきにくさ（身体感覚の認識困難）",supports:[{title:"定時排泄の習慣化",detail:"食後30分など決まった時間にトイレに誘う定時排泄を設定し感覚の有無に関わらず排泄の機会を作る。"},{title:"腹部マッサージ・姿勢の支援",detail:"腸の動きを促す腹部マッサージや便器で足が床につく姿勢（足台使用）を整えいきみやすくする。"},{title:"医療・養護教諭との連携",detail:"便秘の管理について養護教諭・小児科医・栄養士と情報を共有し学校・家庭・医療が連携して支援する。"}]},
+      {id:"h4",text:"特定の場所・方法へのこだわり（ルーティンの固執）",supports:[{title:"こだわりを尊重しながら条件を段階的に変える",detail:"まず自宅と同じ条件（便座カバー・音楽など）を学校でも再現し少しずつ条件を変化させる。"},{title:"視覚的なトイレ手順カードの作成",detail:"①入る②鍵をかける③ズボンをおろす…と手順を写真カードで示し安心して手順を踏めるよう支援する。"},{title:"家庭との連携によるルーティンの統一",detail:"保護者と連絡を取り学校と家庭で排泄ルーティンをなるべく統一する。"}]},
+    ]},
+  p18:{icon:"⚠️",name:"性的な問題行動",desc:"公共の場での自慰行為・不適切な身体接触・性的な言動など",tag:null,
+    jiritsu:[{catId:2,items:["情緒の安定"]},{catId:3,items:["他者の意図や感情の理解","自己の理解と行動の調整"]},{catId:1,items:["健康状態の維持・改善","障害の特性の理解と生活環境の調整"]}],
+    hypotheses:[
+      {id:"h1",text:"感覚刺激を求めている（自慰行為として）",supports:[{title:"プライベートゾーン・プライベートタイムの指導",detail:"「体の大切な部分」「プライベートな行為はひとりの場所で」という概念を本人の理解に合わせた教材で丁寧に教える。"},{title:"「場所のルール」の明確な指導",detail:"「公共の場ではしない」「自分の部屋・トイレでだけOK」というルールを視覚カードで示し繰り返し練習する。"},{title:"代替感覚刺激と環境設定",detail:"行動が起きやすい場面や時間帯を把握しその時間帯に感覚を満たせる代替活動を計画的に提供する。"}]},
+      {id:"h2",text:"性・身体についての知識が不足している",supports:[{title:"発達段階に合わせた性教育の実施",detail:"個人の理解度に合わせた絵本・イラスト・人形などを用いてプライベートゾーン・同意・人との距離感について系統的に教える。"},{title:"「人との距離感」の具体的な指導",detail:"フープやテープで距離を視覚化するなど具体的な距離感を体験的に学ぶ活動を取り入れる。"},{title:"継続的な性教育プログラムの導入",detail:"単発の指導ではなく年間を通じた継続的な性教育を計画し保護者・チーム間で共有する。"}]},
+      {id:"h3",text:"不安・ストレスの自己調整手段になっている",supports:[{title:"ストレスの原因の特定と環境調整",detail:"行動が増える場面・時間・状況を記録しストレスの引き金を特定して環境を改善する。"},{title:"代替の自己調整手段の指導",detail:"深呼吸・フィジェットツール・好きな活動など別の形でストレスを解消する手段を教え強化する。"},{title:"SC・専門家との連携",detail:"スクールカウンセラー・心理士・医師と情報共有しチームで対応方針を統一する。"}]},
+      {id:"h4",text:"過去の性的な体験・トラウマの影響",supports:[{title:"専門家との連携（児童相談所・心理士・医療）",detail:"性的虐待等が疑われる場合は管理職・SC・児童相談所と速やかに連携し組織として適切な手続きを踏む。"},{title:"安全で予測可能な関係性の構築",detail:"急がず本人のペースを大切にしながら信頼できる大人との安定した関係を時間をかけて築く。"},{title:"トラウマインフォームドアプローチの実践",detail:"行動の背景にトラウマがある可能性を前提に罰や強制を用いず安全・信頼・選択肢を重視した支援を行う。"}]},
+    ]},
+};
+
+// ═══════════════════════════════════════════
+// カテゴリー
+// ═══════════════════════════════════════════
+const CATS = [
+  {id:"catA",icon:"⚡",name:"自傷・攻撃的行動",desc:"自分や他者を傷つける行動",color:"#C62828",bg:"#FFEBEE",pids:["p01","p02"]},
+  {id:"catB",icon:"🌊",name:"感情・情緒の調整",desc:"感情の爆発・強い不安・緊張など",color:"#6A1B9A",bg:"#F3E5F5",pids:["p03","p11"]},
+  {id:"catC",icon:"🔄",name:"行動・こだわり・多動",desc:"逃げる・こだわり・集中困難・場面転換・拒否など",color:"#E65100",bg:"#FFF3E0",pids:["p04","p05","p07","p12","p13"]},
+  {id:"catD",icon:"💔",name:"愛着・対人関係",desc:"愛着障害・執着・試し行動・友人関係など",color:"#1565C0",bg:"#E3F2FD",pids:["p06","p08","p09","p15"]},
+  {id:"catE",icon:"🏥",name:"感覚・身体・健康",desc:"感覚過敏・食事・異食・排便など",color:"#2E7D32",bg:"#E8F5E9",pids:["p10","p14","p16","p17"]},
+  {id:"catF",icon:"⚠️",name:"性的な問題行動",desc:"公共の場での自慰行為・不適切な言動・接触など",color:"#37474F",bg:"#ECEFF1",pids:["p18"]},
+];
+
+// 問題IDからカテゴリーを引く
+const pidToCat = {};
+CATS.forEach(c=>c.pids.forEach(pid=>pidToCat[pid]=c));
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let step = 0;
+let selCatIds  = new Set();  // 選択中のカテゴリーID
+let selProbIds = new Set();  // 選択中の問題ID
+let selHypMap  = {};         // probId -> Set<hypId>
+let sessionLog = [];
+
+// ═══════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════
+function render(){
+  [renderCats,renderProbs,renderHyps,renderResult][step]?.();
+  renderBreadcrumb();
+  renderNextBar();
+}
+
+// ── STEP 0: カテゴリー選択 ──────────────────
+function renderCats(){
+  const cards = CATS.map(c=>`
+    <div class="sel-card ${selCatIds.has(c.id)?'selected':''}"
+         onclick="toggleCat('${c.id}')"
+         style="border-color:${selCatIds.has(c.id)?c.color:''};background:${selCatIds.has(c.id)?c.bg:''}">
+      <div class="chk">✓</div>
+      <div class="card-icon">${c.icon}</div>
+      <div class="card-name" style="color:${c.color}">${c.name}</div>
+      <div class="card-desc">${c.desc}</div>
+      <span class="card-count" style="background:${c.bg};color:${c.color}">${c.pids.length}項目</span>
+    </div>`).join('');
+
+  document.getElementById('main').innerHTML=`
+    <div class="step-label"><span class="step-badge">STEP 1</span><span class="step-title">カテゴリーを選んでください（複数可）</span></div>
+    <p class="step-desc">気になる問題行動のカテゴリーをタップして選択してください。複数選ぶことができます。</p>
+    <div class="sel-grid cat-cols fade-in">${cards}</div>
+    ${sessionLog.length>0?`<div class="log-badge">✅ 本日の記録: ${sessionLog.length}件</div>`:''}
+  `;
+}
+
+// ── STEP 1: 問題行動選択 ─────────────────────
+function renderProbs(){
+  // 選択カテゴリーでグループ化
+  const activeCats = CATS.filter(c=>selCatIds.has(c.id));
+  let html = '';
+  activeCats.forEach(c=>{
+    const cards = c.pids.map(pid=>{
+      const p=P[pid];
+      const sel=selProbIds.has(pid);
+      return `
+        <div class="sel-card ${sel?'selected':''}"
+             onclick="toggleProb('${pid}')"
+             style="border-color:${sel?c.color:''};background:${sel?c.bg:''}">
+          <div class="chk">✓</div>
+          <div class="card-icon">${p.icon}</div>
+          <div class="card-name">${p.name}</div>
+          <div class="card-desc">${p.desc}</div>
+          ${p.tag?`<span class="card-tag">${p.tag}</span>`:''}
+        </div>`;
+    }).join('');
+    html+=`<div class="section-divider">${c.icon} ${c.name}</div><div class="sel-grid prob-cols" style="margin-bottom:16px">${cards}</div>`;
+  });
+
+  document.getElementById('main').innerHTML=`
+    <div class="step-label"><span class="step-badge">STEP 2</span><span class="step-title">問題行動を選んでください（複数可）</span></div>
+    <p class="step-desc">調べたい問題行動をタップして選択してください。複数選ぶことができます。</p>
+    <div class="fade-in">${html}</div>
+  `;
+}
+
+// ── STEP 2: 仮説選択 ────────────────────────
+function renderHyps(){
+  let html='';
+  selProbIds.forEach(pid=>{
+    const p=P[pid];
+    const cat=pidToCat[pid];
+    if(!selHypMap[pid]) selHypMap[pid]=new Set();
+
+    const jiritsuHtml=p.jiritsu.map(area=>{
+      const c=jc(area.catId);
+      return `<div class="jiritsu-row">
+        <div class="cat-label ${c.cc}">${c.name}</div>
+        <div class="j-items">${area.items.map(i=>`<span class="j-item ${c.ic}">▸ ${i}</span>`).join('')}</div>
+      </div>`;
+    }).join('');
+
+    const hypHtml=p.hypotheses.map((h,i)=>`
+      <div class="hyp-card ${selHypMap[pid].has(h.id)?'selected':''}" onclick="toggleHyp('${pid}','${h.id}')">
+        <div class="h-chk">✓</div>
+        <div class="hyp-text">${i+1}. ${h.text}</div>
+      </div>`).join('');
+
+    html+=`
+      <div class="prob-section">
+        <div class="prob-section-header" style="background:${cat.bg}20">
+          <span class="ph-icon">${p.icon}</span>
+          <span class="ph-name" style="color:${cat.color}">${p.name}</span>
+        </div>
+        <div class="prob-section-body">
+          <div style="margin-bottom:10px">${jiritsuHtml}</div>
+          <div style="font-size:12px;color:var(--subtext);font-weight:600;margin-bottom:8px">原因の仮説（複数選択可）</div>
+          <div class="hyp-list">${hypHtml}</div>
+        </div>
+      </div>`;
+  });
+
+  document.getElementById('main').innerHTML=`
+    <div class="step-label"><span class="step-badge">STEP 3</span><span class="step-title">原因の仮説を選んでください（複数可）</span></div>
+    <p class="step-desc">各問題行動について、当てはまると思われる仮説をタップしてください。複数選ぶことができます。</p>
+    <div class="fade-in">${html}</div>
+  `;
+}
+
+// ── STEP 3: 結果 ─────────────────────────────
+function renderResult(){
+  let html='';
+  selProbIds.forEach(pid=>{
+    const p=P[pid];
+    const cat=pidToCat[pid];
+    const hyps=[...selHypMap[pid]].map(hid=>p.hypotheses.find(h=>h.id===hid)).filter(Boolean);
+    if(!hyps.length) return;
+
+    const jiritsuHtml=p.jiritsu.map(area=>{
+      const c=jc(area.catId);
+      return `<div class="jiritsu-row">
+        <div class="cat-label ${c.cc}">${c.name}</div>
+        <div class="j-items">${area.items.map(i=>`<span class="j-item ${c.ic}">▸ ${i}</span>`).join('')}</div>
+      </div>`;
+    }).join('');
+
+    const hypBlocks=hyps.map(h=>`
+      <div class="hyp-pill">
+        <div class="pill-label">仮説（原因）</div>${h.text}
+      </div>
+      <div style="margin-bottom:12px">${h.supports.map((s,i)=>`
+        <div class="sup-item">
+          <div class="sup-num">支援例 ${i+1}</div>
+          <div class="sup-title">${s.title}</div>
+          <div class="sup-detail">${s.detail}</div>
+        </div>`).join('')}
+      </div>`).join('');
+
+    html+=`
+      <div class="result-block">
+        <div class="result-header" style="background:${cat.bg}20">
+          <span style="font-size:18px">${p.icon}</span>
+          <span style="color:${cat.color}">${p.name}</span>
+        </div>
+        <div class="result-body">
+          <div class="merged-jiritsu" style="margin-bottom:12px">${jiritsuHtml}</div>
+          ${hypBlocks}
+        </div>
+      </div>`;
+  });
+
+  document.getElementById('main').innerHTML=`
+    <div class="step-label"><span class="step-badge">支援方法の例</span></div>
+    <div class="fade-in">
+      ${html}
+      <button class="again-btn" onclick="restart()">🔍 最初からやり直す</button>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════
+// NEXT BAR
+// ═══════════════════════════════════════════
+function totalHypSel(){
+  return Object.values(selHypMap).reduce((s,set)=>s+set.size,0);
+}
+
+function renderNextBar(){
+  const bar=document.getElementById('nextBar');
+  if(step===3){bar.style.display='none';return;}
+  bar.style.display='flex';
+
+  let disabled=true, label='', backLabel='';
+  if(step===0){ disabled=selCatIds.size===0; label=`次へ：問題行動を選ぶ（${selCatIds.size}カテゴリー選択中）`; }
+  if(step===1){ disabled=selProbIds.size===0; label=`次へ：仮説を選ぶ（${selProbIds.size}件選択中）`; backLabel='← カテゴリーに戻る'; }
+  if(step===2){ disabled=totalHypSel()===0; label=`結果を見る（${totalHypSel()}件の仮説選択中）`; backLabel='← 問題行動に戻る'; }
+
+  bar.innerHTML=`
+    ${backLabel?`<button class="back-btn2" onclick="goBack()">${backLabel}</button>`:''}
+    <button class="next-btn" onclick="goNext()" ${disabled?'disabled':''}>${label}</button>
+  `;
+}
+
+// ═══════════════════════════════════════════
+// TOGGLE / NAV
+// ═══════════════════════════════════════════
+function toggleCat(id){
+  selCatIds.has(id)?selCatIds.delete(id):selCatIds.add(id);
+  // 選択解除されたカテゴリーの問題も解除
+  CATS.find(c=>c.id===id)?.pids.forEach(pid=>{
+    if(!CATS.filter(c=>selCatIds.has(c.id)).flatMap(c=>c.pids).includes(pid)){
+      selProbIds.delete(pid);
+      delete selHypMap[pid];
+    }
+  });
+  render();
+}
+function toggleProb(id){
+  selProbIds.has(id)?selProbIds.delete(id):selProbIds.add(id);
+  if(!selProbIds.has(id)) delete selHypMap[id];
+  render();
+}
+function toggleHyp(pid,hid){
+  if(!selHypMap[pid]) selHypMap[pid]=new Set();
+  selHypMap[pid].has(hid)?selHypMap[pid].delete(hid):selHypMap[pid].add(hid);
+  render();
+}
+
+function goNext(){
+  if(step===0 && selCatIds.size===0) return;
+  if(step===1 && selProbIds.size===0) return;
+  if(step===2){
+    if(totalHypSel()===0) return;
+    // CSVログに記録
+    selProbIds.forEach(pid=>{
+      const p=P[pid];
+      const cat=pidToCat[pid];
+      const hyps=[...(selHypMap[pid]||[])].map(hid=>p.hypotheses.find(h=>h.id===hid)).filter(Boolean);
+      const jiritsuStr=p.jiritsu.map(area=>`${jc(area.catId).name}（${area.items.join('・')}）`).join(' | ');
+      hyps.forEach(h=>{
+        sessionLog.push({
+          timestamp: new Date().toLocaleString('ja-JP'),
+          category: cat.name,
+          problem: p.name,
+          problemDesc: p.desc,
+          jiritsu: jiritsuStr,
+          hypothesis: h.text,
+          supports: h.supports.map(s=>s.title).join(' / '),
+          supportDetails: h.supports.map(s=>`【${s.title}】${s.detail}`).join(' | '),
+        });
+      });
+    });
+  }
+  step++; render(); window.scrollTo(0,0);
+}
+
+function goBack(){
+  step--; render(); window.scrollTo(0,0);
+}
+
+function restart(){
+  step=0; selCatIds.clear(); selProbIds.clear(); selHypMap={};
+  render(); window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════════
+// BREADCRUMB
+// ═══════════════════════════════════════════
+function renderBreadcrumb(){
+  const bc=document.getElementById('bc');
+  const inner=document.getElementById('bcInner');
+  if(step===0){bc.style.display='none';return;}
+  bc.style.display='block';
+  const steps=[
+    {label:'カテゴリー',s:0},
+    {label:'問題行動',s:1},
+    {label:'仮説',s:2},
+    {label:'支援方法',s:3},
+  ];
+  inner.innerHTML=steps.map((st,i)=>{
+    if(i>step) return '';
+    const isLast=i===step;
+    return (i>0?'<span class="sep">›</span>':'')+
+      (isLast?`<span class="bc-current">${st.label}</span>`
+             :`<span class="crumb" onclick="goToStep(${st.s})">${st.label}</span>`);
+  }).join('');
+}
+
+function goToStep(s){
+  if(s>=step) return;
+  step=s; render(); window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════════
+// CSV EXPORT
+// ═══════════════════════════════════════════
+function exportCSV(){
+  if(!sessionLog.length){showToast('まだ記録がありません。「結果を見る」まで進むと記録されます。');return;}
+  const hdrs=['日時','カテゴリー','問題行動','問題の説明','関連する自立活動区分・項目','選択した仮説（原因）','支援方法（タイトル）','支援方法（詳細）'];
+  const rows=sessionLog.map(e=>[e.timestamp,e.category,e.problem,e.problemDesc,e.jiritsu,e.hypothesis,e.supports,e.supportDetails].map(c=>`"${String(c).replace(/"/g,'""')}"`));
+  const csv='﻿'+[hdrs.map(h=>`"${h}"`), ...rows].map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`特別支援_行動支援記録_${new Date().toLocaleDateString('ja-JP').replace(/\//g,'-')}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  showToast(`✅ ${sessionLog.length}件の記録をCSVで保存しました`);
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+render();
+</script>
+</body>
+</html>
